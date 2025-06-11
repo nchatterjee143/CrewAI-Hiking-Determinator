@@ -63,7 +63,7 @@ def check_hiking_conditions(zip_code):
 
         - If temperature is over 80ºF, warn about heat risks and recommend hydration.
         - If time is between 8:00 PM and 5:00 AM (i.e., hour < 5 or hour >= 20), advise against hiking.
-        - Otherwise, if safe, recommend some hiking gear, hydration tips, and nearby trail advice.
+        - Otherwise, if safe, recommend some hiking gear, hydration tips, nearby trail advice, and trail recommendations within a 10 km radius.
         """,
         expected_output="Return an HTML-formatted hiking recommendation with clear justification and practical advice.",
         agent=weather_agent

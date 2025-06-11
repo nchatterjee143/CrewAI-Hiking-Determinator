@@ -1,0 +1,10 @@
+task:
+  template: |
+    Determine if it's safe to hike near ZIP code {zip} ({city}).
+    Weather: {description}, {temp}ºF.
+    Local time is currently {time_str}.
+
+    - If temperature is over 80ºF, warn about heat risks and recommend hydration.
+    - If time is between 8:00 PM and 5:00 AM, advise against hiking for safety reasons (e.g. visibility, animal risks).
+    - Otherwise, if safe, recommend some tips, gear, trails within a 10 km radius, and trail best practices.
+  expected_output: "Hiking recommendation (yes or no) with clear justification, practical advice, and trail recommendations if applicable."
