@@ -12,7 +12,7 @@ Using API keys from OpenAI and OpenWeatherMap, you can ask AI if you should go o
 
 ```
 git clone https://github.com/nchatterjee143/CrewAI-Hiking-Determinator.git
-cd YouTube-Transcript-LangChain-Agent
+cd CrewAI-Hiking-Determinator
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
