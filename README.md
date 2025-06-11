@@ -1,19 +1,21 @@
-# YouTube Transcript LangChain Agent
+# CrewAI Hiking Determinator
 
-Using an API key from Claude (Anthropic AI) and a YouTube video URL, you can talk to the AI about the transcript of the YouTube video!
+Using API keys from OpenAI and OpenWeatherMap, you can ask AI if you should go on a hike in a specified ZIP code!
 
 ## Requirements
 
-- An API key from Anthropic, can make one [here](https://console.anthropic.com/settings/keys).
-- A valid Python 3 installation.
-- A link to a YouTube video.
+- An API key from OpenAI, can make one [here](https://platform.openai.com/settings/organization/api-keys).
+- An API key from OpenWeatherMap, can make one [here](https://home.openweathermap.org/api_keys)
+- A valid Python 3 installation, preferrably 3.12!
 
 ## Setup
 
 ```
-git clone https://github.com/nchatterjee143/YouTube-Transcript-LangChain-Agent.git
+git clone https://github.com/nchatterjee143/CrewAI-Hiking-Determinator.git
 cd YouTube-Transcript-LangChain-Agent
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 cp -r .env.example .env
 ```
-Once this is complete, open the new .env file. Place your API key in the first line of the .env file. In the second line of the .env file place the YouTube video URL. Finally, run `python main.py` to interact with the AI in your terminal window.
+Once this is complete, open the new .env file. Place your API keys in the line of the .env file. In the second line of the .env file place the YouTube video URL. Finally, run `python app.py` to interact with the AI in your web browser of choice.

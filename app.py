@@ -10,8 +10,8 @@ app = Flask(__name__)
 def index():
     result = None
     if request.method == 'POST':
-        city = request.form['city']
-        result = check_hiking_conditions(city)
+        zip_code = request.form['zip']
+        result = check_hiking_conditions(zip_code)
     return render_template('index.html', result=result)
 
 if __name__ == '__main__':

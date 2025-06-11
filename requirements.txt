@@ -5,4 +5,4 @@ openai
 requests
 python-dotenv
 certifi
-langchain_community
+langchain_openai
