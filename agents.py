@@ -3,6 +3,12 @@ from crewai import Crew, Agent, Task
 from langchain_openai import ChatOpenAI
 import os
 from datetime import datetime, timezone, timedelta
+import logging
+import html
+
+# Silence terminal logs from langchain and crewai
+logging.getLogger('langchain').setLevel(logging.WARNING)
+logging.getLogger('crewai').setLevel(logging.WARNING)
 
 api_key = os.getenv('OPENWEATHERMAP_API_KEY')
 
@@ -12,40 +18,28 @@ def get_weather(zip_code):
     data = response.json()
 
     if response.status_code != 200 or 'main' not in data:
-        return None, None, None, None, None
+        return None, None, None, None
 
     temp = data['main']['temp']
     description = data['weather'][0]['description']
     city = data.get('name', 'your area')
-    lat = data['coord']['lat']
-    lon = data['coord']['lon']
-    return temp, description, city, lat, lon
+    offset_seconds = data['timezone']
+    return temp, description, city, offset_seconds
 
-def get_local_time(lat, lon):
-    timezone_url = f"http://api.openweathermap.org/data/2.5/timezone?lat={lat}&lon={lon}&appid={api_key}"
-    response = requests.get(timezone_url)
-
-    if response.status_code != 200:
-        return None
-
-    data = response.json()
+def get_local_time(offset_seconds):
     current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
-    offset_seconds = data['timezone']['offset_seconds']
     local_time = current_utc + timedelta(seconds=offset_seconds)
     return local_time
 
 def check_hiking_conditions(zip_code):
-    temp, description, city, lat, lon = get_weather(zip_code)
+    temp, description, city, offset_seconds = get_weather(zip_code)
 
     if temp is None:
-        return "❌ Sorry, I couldn't get the weather information. Please check the ZIP code."
+        return "<p class='error'>❌ Sorry, I couldn't get the weather information. Please check the ZIP code.</p>"
 
-    local_time = get_local_time(lat, lon)
-    if local_time is None:
-        return "❌ Could not determine the local time at that location."
-
-    local_hour = local_time.hour
+    local_time = get_local_time(offset_seconds)
     time_str = local_time.strftime("%I:%M %p")
+    hour = local_time.hour
 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
@@ -56,7 +50,7 @@ def check_hiking_conditions(zip_code):
         role='Weather & Time Safety Analyst',
         goal='Advise on hiking safety based on weather and time of day',
         backstory='Expert in outdoor conditions, local time, and safety best practices.',
-        verbose=True,
+        verbose=False,
         allow_delegation=False,
         llm=llm
     )
@@ -68,13 +62,36 @@ def check_hiking_conditions(zip_code):
         Local time is currently {time_str}.
 
         - If temperature is over 80ºF, warn about heat risks and recommend hydration.
-        - If time is between 8:00 PM and 5:00 AM, advise against hiking for safety reasons (e.g. visibility, animal risks).
-        - Otherwise, if safe, recommend some tips, gear, and trail best practices.
+        - If time is between 8:00 PM and 5:00 AM (i.e., hour < 5 or hour >= 20), advise against hiking.
+        - Otherwise, if safe, recommend some hiking gear, hydration tips, and nearby trail advice.
         """,
-        expected_output="Hiking recommendation (yes or no) with clear justification and practical advice.",
+        expected_output="Return an HTML-formatted hiking recommendation with clear justification and practical advice.",
         agent=weather_agent
     )
 
-    crew = Crew(agents=[weather_agent], tasks=[task], verbose=False)
-    result = crew.kickoff()
-    return result
+    crew = Crew(
+        agents=[weather_agent],
+        tasks=[task],
+        verbose=False
+    )
+
+    raw_result = str(crew.kickoff()).strip()
+    if raw_result.startswith("```html"):
+        raw_result = raw_result.removeprefix("```html").strip()
+    if raw_result.endswith("```"):
+        raw_result = raw_result.removesuffix("```").strip()
+
+    result = html.unescape(raw_result)
+
+    if not result.lower().startswith("<p>") and not result.lower().startswith("<div>") and not result.lower().startswith("<h"):
+        result = f"<p>{result}</p>"
+
+    return f"""
+    <div class='result'>
+        <h2>Hiking Safety Recommendation</h2>
+        <p><strong>Location:</strong> {city} ({zip_code})</p>
+        <p><strong>Current Weather:</strong> {description}, {temp}ºF</p>
+        <p><strong>Local Time:</strong> {time_str}</p>
+        <div class='advice'>{result}</div>
+    </div>
+    """
