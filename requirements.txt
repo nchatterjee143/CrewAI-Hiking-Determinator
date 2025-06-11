@@ -1,6 +1,8 @@
+Flask
+crewai
 langchain
-langchain_community
-langchain-anthropic
-anthropic
-python-dotenv
+openai
 requests
+python-dotenv
+certifi
+langchain_community
